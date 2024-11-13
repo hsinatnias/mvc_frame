@@ -2,21 +2,35 @@
 namespace App\Controllers;
 
 use App\Models\Product;
+use Framework\Viewer;
+
 class Products
 {
+    public function __construct(private Viewer $viewer, private Product $model)
+    {
+
+    }
     public function index()
     {
        
 
-        $model = new Product;
 
-        $products = $model->getData();
 
-        require 'views/products_index.php';
+        $products = $this->model->getData();
+
+
+        echo $this->viewer->render('shared/header', ["title" => "Products"]);
+        echo $this->viewer->render("products/index",[
+            "products" => $products
+        ]);
+        echo $this->viewer->render('shared/footer');
     }
     public function show(string $id){
-        var_dump($id);
-        require 'views/products_show.php';
+
+
+        echo $this->viewer->render('shared/header', ["title" => "Products"]);
+        echo $this->viewer->render("Products/show", ["id" => $id]);
+        echo $this->viewer->render('shared/footer');
     }
 
     public function showPage(string $title, string $id, string $page){

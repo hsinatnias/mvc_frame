@@ -1,8 +1,14 @@
 <?php
 namespace App\Controllers;
 
+use Framework\Viewer;
+
 class Home{
     public function index(){
-        require 'views/home_index.php';
+        $viewer = new Viewer;
+        echo $viewer->render('shared/header', ["title" => "Home"]);
+        echo $viewer->render('Home/index');
+        echo $viewer->render('shared/footer');
+
     }
 }
