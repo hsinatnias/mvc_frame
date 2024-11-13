@@ -1,14 +1,16 @@
 <?php
-
+declare(strict_types=1);
 namespace Framework;
 
 
-use ReflectionClass;
+
 use ReflectionMethod;
+use Framework\Container;
+use Framework\Exceptions\PageNotFoundException;
 
 class Dispatcher
 {
-    public function __construct(private Router $router)
+    public function __construct(private Router $router, private Container $container)
     {
 
     }
@@ -19,26 +21,14 @@ class Dispatcher
 
 
         if ($params === false) {
-            exit("No route matches");
+            throw new PageNotFoundException("No route matches for the $path");
         }
 
         $controller = $this->getControllerNames($params);
         $action = $this->getActionNames($params);
 
-        $reflector = new ReflectionClass($controller);
-        $constructor = $reflector->getConstructor();
-
-        $dependencies = [];
-
-        if($constructor !== null) {
-            foreach ($constructor->getParameters() as $parameter) {
-                $type = (string) $parameter->getType();
-                $dependencies[] = new $type;
-            }
-        }
-
+        $controller_object = $this->container->get($controller);
         $args = $this->getActionArguments($controller, $action, $params);
-        $controller_object = new $controller(...$dependencies);
         $controller_object->$action(...$args);
     }
 
@@ -56,10 +46,10 @@ class Dispatcher
     private function getControllerNames(array $params): string
     {
         $controller = $params["controller"];
-        $controller = str_replace("-", "",  ucwords(strtolower($controller), '-'));
+        $controller = str_replace("-", "", ucwords(strtolower($controller), '-'));
         $namespace = "App\Controllers";
-        if(array_key_exists("namespace", $params)) {
-            $namespace .= "\\".$params["namespace"];
+        if (array_key_exists("namespace", $params)) {
+            $namespace .= "\\" . $params["namespace"];
         }
 
         return $namespace . "\\" . $controller;
@@ -67,8 +57,9 @@ class Dispatcher
     private function getActionNames(array $params): string
     {
         $action = $params["action"];
-        $action = lcfirst(str_replace("-", "",  ucwords(strtolower($action), '-')));
+        $action = lcfirst(str_replace("-", "", ucwords(strtolower($action), '-')));
         return $action;
     }
+    
 
 }
