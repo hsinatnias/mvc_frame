@@ -23,14 +23,14 @@ class ErrorHandler
             $template = "500.php";
         }
 
-        $show_errors = true;
-        if ($show_errors) {
+        
+        if ($_ENV["SHOW_ERRORS"]) {
             ini_set("display_errors", "1");
         } else {
             ini_set("display_errors", "0");
             ini_set("log_errors", "1");
 
-            require "views/$template";
+            require dirname(__DIR__, 2). "/views/$template";
         }
 
         throw $exception;
