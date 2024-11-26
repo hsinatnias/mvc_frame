@@ -2,18 +2,24 @@
 declare(strict_types=1);
 namespace App\Models;
 
-use PDO;
-use App\Database;
-class Product
+use Framework\Model;
+
+class Product extends Model
 {
-    public function __construct(private Database $db){
+    protected $table = "product";
+
+    
+
+    
+
+    protected function validate(array $data): void
+    {
+        if (empty($data['name'])) {
+            $this->addError('name', 'Name is required');
+        }
+       
 
     }
-    public function getData(): array
-    {
-        $pdo = $this->db->getConnection();
-        
-        $statement = $pdo->query("SELECT * FROM product");
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
+    
+
 }
