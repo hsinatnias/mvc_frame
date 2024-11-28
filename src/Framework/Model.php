@@ -17,7 +17,7 @@ abstract class Model
         return strtolower(array_pop($parts));
     }
 
-    public function __construct(private Database $db)
+    public function __construct(protected Database $db)
     {
 
     }
@@ -77,6 +77,51 @@ abstract class Model
         }
 
 
+        return $statement->execute();
+    }
+
+    public function update(string $id, array $data): bool
+    {
+        $this->validate($data);
+        if (!empty($this->errors)) {
+            return false;
+        }
+        $sql = "UPDATE {$this->getTable()} ";
+        unset($data["id"]);
+        $assignments = array_keys($data);
+        array_walk($assignments, function (&$value) {
+            $value = "$value = ?";
+        });
+
+        $sql .= " SET " . implode(", ", $assignments);
+        $sql .= " WHERE id = ?";
+
+        $conn = $this->db->getConnection();
+
+        $statement = $conn->prepare($sql);
+        $index = 1;
+        foreach ($data as $value) {
+            $type = match (gettype($value)) {
+                "boolean" => PDO::PARAM_BOOL,
+                "integer" => PDO::PARAM_INT,
+                "NULL" => PDO::PARAM_NULL,
+                default => PDO::PARAM_STR
+            };
+            $statement->bindValue($index++, $value, $type);
+        }
+
+        $statement->bindValue($index, $id, PDO::PARAM_INT);
+
+        return $statement->execute();
+    }
+
+    public function delete(string $id): bool
+    {
+        $sql = "DELETE FROM {$this->getTable()}
+                WHERE id=:id";
+        $con = $this->db->getConnection();
+        $statement = $con->prepare($sql);
+        $statement->bindValue(":id", $id, PDO::PARAM_INT);
         return $statement->execute();
     }
 
