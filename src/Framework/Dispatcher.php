@@ -6,6 +6,7 @@ namespace Framework;
 
 use ReflectionMethod;
 use Framework\Container;
+use UnexpectedValueException;
 use Framework\Exceptions\PageNotFoundException;
 
 class Dispatcher
@@ -15,19 +16,24 @@ class Dispatcher
 
     }
 
-    public function handle(string $path, string $method)
+    public function handle(Request $request)
     {
-        $params = $this->router->match($path, $method);
+        $path = $this->getPath($request->uri);
+        $params = $this->router->match($path, $request->method);
 
 
         if ($params === false) {
-            throw new PageNotFoundException("No route matches for the $path with method $method");
+            throw new PageNotFoundException("No route matches for the $path with method $request->method");
         }
 
         $controller = $this->getControllerNames($params);
         $action = $this->getActionNames($params);
 
         $controller_object = $this->container->get($controller);
+
+        $controller_object->setRquest($request);
+        $controller_object->setViewer($this->container->get(Viewer::class));
+
         $args = $this->getActionArguments($controller, $action, $params);
         $controller_object->$action(...$args);
     }
@@ -60,6 +66,15 @@ class Dispatcher
         $action = lcfirst(str_replace("-", "", ucwords(strtolower($action), '-')));
         return $action;
     }
-    
+    private function getPath(string $uri): string
+    {
+        $path = parse_url($uri, PHP_URL_PATH);
+
+        if ($path === false) {
+            throw new UnexpectedValueException("Malformed URL: '{$uri}'");
+        }
+        return $path;
+    }
+
 
 }

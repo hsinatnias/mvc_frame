@@ -2,14 +2,16 @@
 declare(strict_types=1);
 namespace App\Controllers;
 
-use Framework\Viewer;
+use Framework\Controller;
 
-class Home{
-    public function index(){
-        $viewer = new Viewer;
-        echo $viewer->render('shared/header', ["title" => "Home"]);
-        echo $viewer->render('Home/index');
-        echo $viewer->render('shared/footer');
+class Home extends Controller
+{
+    public function index()
+    {
+        
+        echo $this->viewer->render('shared/header', ["title" => "Home"]);
+        echo $this->viewer->render('Home/index');
+        echo $this->viewer->render('shared/footer');
 
     }
 }

@@ -2,13 +2,15 @@
 declare(strict_types=1);
 namespace App\Controllers;
 
+use Framework\Controller;
+use Framework\Viewer;
 use App\Models\Product;
 use Framework\Exceptions\PageNotFoundException;
-use Framework\Viewer;
 
-class Products
+class Products extends Controller
 {
-    public function __construct(private Viewer $viewer, private Product $model)
+    
+    public function __construct(private Product $model)
     {
 
     }
@@ -62,8 +64,8 @@ class Products
     public function create()
     {
         $data = [
-            "name" => $_POST["name"],
-            "description" => empty($_POST["description"]) ? null : $_POST["description"]
+            "name" => $this->request->post["name"],
+            "description" => empty($this->request->post["description"]) ? null : $this->request->post["description"]
         ];
         if ($this->model->insert($data)) {
             header("Location: /products/{$this->model->getInsertID()}/show");
@@ -86,8 +88,8 @@ class Products
         $product = $this->getProduct($id);
 
 
-        $product["name"] = $_POST["name"];
-        $product["description"] = empty($_POST["description"]) ? null : $_POST["description"];
+        $product["name"] = $this->request->post["name"];
+        $product["description"] = empty($this->request->post["description"]) ? null : $this->request->post["description"];
 
         if ($this->model->update($id, $product)) {
             header("Location: /products/{$id}/show");
@@ -109,7 +111,7 @@ class Products
     {
         $product = $this->getProduct($id);
 
-        if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        if ($this->request->server['REQUEST_METHOD'] === "POST") {
             $this->model->delete($id);
             header("Location: /products/index");
             exit;
