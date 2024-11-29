@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use Framework\Controller;
-use Framework\Viewer;
 use App\Models\Product;
 use Framework\Exceptions\PageNotFoundException;
 
@@ -18,12 +17,13 @@ class Products extends Controller
     {
         $products = $this->model->findAll();
 
-        echo $this->viewer->render('shared/header', ["title" => "Products"]);
-        echo $this->viewer->render("products/index", [
+        
+        echo $this->viewer->render("products/index.mvc.php", [
+            "title" => "Products",
             "products" => $products,
             "total" => $this->model->getTotal()
         ]);
-        echo $this->viewer->render('shared/footer');
+        
     }
     public function show(string $id)
     {
